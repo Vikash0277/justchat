@@ -55,7 +55,7 @@ export default function LoginPage() {
                 email: data.email,
                 isGuest: false
             }));
-            
+
             router.push("/");
         } catch {
             setError("Unable to login. Please try again.");
@@ -65,7 +65,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 transition-colors">
+        <div className="flex h-full box-border justify-center items-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 transition-colors">
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 max-w-md w-full flex-col rounded-2xl p-6 shadow-lg">
                 <h1 className="mb-6 text-center text-2xl font-bold sm:text-3xl text-slate-900 dark:text-white">
                     Login

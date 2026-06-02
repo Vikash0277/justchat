@@ -146,17 +146,17 @@ export default function UserDashboard() {
             prev.map((c) =>
               c.id === activeChatId
                 ? {
-                    ...c,
-                    messages: data.messages.map((m: any) => ({
-                      id: m.id,
-                      sender: m.from === currentUser?.id ? "me" : "them",
-                      text: m.text,
-                      timestamp: new Date(m.ts).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }),
-                    })),
-                  }
+                  ...c,
+                  messages: data.messages.map((m: any) => ({
+                    id: m.id,
+                    sender: m.from === currentUser?.id ? "me" : "them",
+                    text: m.text,
+                    timestamp: new Date(m.ts).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }),
+                  })),
+                }
                 : c,
             ),
           );
@@ -248,7 +248,7 @@ export default function UserDashboard() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
           <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
@@ -333,7 +333,7 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen w-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100 transition-colors">
       {/* ── TOP NAVBAR ── */}
       <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 px-6 py-2 flex items-center justify-between shrink-0 transition-colors">
         {/* Logo */}
@@ -407,11 +407,10 @@ export default function UserDashboard() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4  rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                  activeTab === tab
+                className={`px-4  rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${activeTab === tab
                     ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                }`}
+                  }`}
               >
                 {icons[tab]}
                 {labels[tab]}
@@ -462,9 +461,8 @@ export default function UserDashboard() {
           {/* Profile avatar → settings */}
           <button
             onClick={() => setActiveTab("settings")}
-            className={`relative h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white uppercase ring-2 ring-transparent transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-              activeTab === "settings" ? "ring-blue-500" : ""
-            }`}
+            className={`relative h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white uppercase ring-2 ring-transparent transition-all hover:scale-105 active:scale-95 cursor-pointer ${activeTab === "settings" ? "ring-blue-500" : ""
+              }`}
           >
             {currentUser.username ? currentUser.username.substring(0, 1) : "ME"}
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
@@ -518,9 +516,8 @@ export default function UserDashboard() {
 
       {/* ── MOBILE BOTTOM TAB BAR ── */}
       <nav
-        className={`md:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 py-3 px-6 flex justify-between items-center transition-colors shrink-0 ${
-          mobileChatOpen ? "hidden" : "flex"
-        }`}
+        className={`md:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 py-3 px-6 flex justify-between items-center transition-colors shrink-0 ${mobileChatOpen ? "hidden" : "flex"
+          }`}
       >
         {(
           [
@@ -596,11 +593,10 @@ export default function UserDashboard() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex flex-col items-center gap-1 flex-1 relative transition-all cursor-pointer ${
-                isActive
+              className={`flex flex-col items-center gap-1 flex-1 relative transition-all cursor-pointer ${isActive
                   ? "text-blue-600 dark:text-blue-400 scale-105"
                   : "text-slate-400 dark:text-slate-500"
-              }`}
+                }`}
             >
               {icon(isActive)}
               <span className="text-[10px] font-extrabold tracking-wide">
