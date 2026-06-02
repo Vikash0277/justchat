@@ -351,7 +351,63 @@ export default function UserDashboard() {
 
     setNewMessageText("");
   };
+  // Handle media upload (images/videos)
+  const handleSendMedia = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data && data.publicId) {
+        const msg = {
+          id: data.publicId,
+          sender: "me" as const,
+          text: "",
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          mediaUrl: data.url,
+          mediaType: data.mediaType,
+          publicId: data.publicId,
+          ts: Date.now(),
+        };
+        setContacts((prev) =>
+          prev.map((c) =>
+            c.id === activeChatId ? { ...c, messages: [...c.messages, msg] } : c,
+          ),
+        );
+      }
+    } catch (err) {
+      console.error("Media upload failed", err);
+    }
+  };
 
+  // Delete a message (including media cleanup)
+  const handleDeleteMessage = async (messageId: string) => {
+    const contact = contacts.find((c) => c.id === activeChatId);
+    const msg = contact?.messages.find((m) => m.id === messageId);
+    if (!msg) return;
+    if (msg.publicId) {
+      try {
+        await fetch(`/api/upload?publicId=${msg.publicId}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        console.error("Failed to delete media", err);
+      }
+    }
+    setContacts((prev) =>
+      prev.map((c) =>
+        c.id === activeChatId
+          ? { ...c, messages: c.messages.filter((m) => m.id !== messageId) }
+          : c,
+      ),
+    );
+  };
   return (
     <div className="h-dvh w-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100 transition-colors">
       {/* ── TOP NAVBAR ── */}
@@ -506,21 +562,23 @@ export default function UserDashboard() {
         )}
 
         {activeTab === "chat" && (
-          <ChatPanel
-            contacts={contacts}
-            activeChatId={activeChatId}
-            setActiveChatId={setActiveChatId}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            mobileChatOpen={mobileChatOpen}
-            setMobileChatOpen={setMobileChatOpen}
-            newMessageText={newMessageText}
-            setNewMessageText={setNewMessageText}
-            onSendMessage={handleSendMessage}
-            setContacts={setContacts}
-            onStartVideoCall={() => setShowVideoCallModal(true)}
-          />
-        )}
+  <ChatPanel
+    contacts={contacts}
+    activeChatId={activeChatId}
+    setActiveChatId={setActiveChatId}
+    searchQuery={searchQuery}
+    setSearchQuery={setSearchQuery}
+    mobileChatOpen={mobileChatOpen}
+    setMobileChatOpen={setMobileChatOpen}
+    newMessageText={newMessageText}
+    setNewMessageText={setNewMessageText}
+    onSendMessage={handleSendMessage}
+    setContacts={setContacts}
+    onSendMedia={handleSendMedia}
+    onDeleteMessage={handleDeleteMessage}
+    onStartVideoCall={() => setShowVideoCallModal(true)}
+  />
+)}
 
         {activeTab === "settings" && (
           <SettingsPanel
