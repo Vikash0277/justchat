@@ -224,9 +224,31 @@ export default function UserDashboard() {
       });
     });
 
-    newSocket.on("userOffline", (userId: string) => {
-      setOnlineUsers((prev) => prev.filter((id) => id !== userId));
-    });
+      // Updated offline handling with media cleanup
+newSocket.on("userOffline", (userId: string) => {
+  setOnlineUsers((prev) => prev.filter((id) => id !== userId));
+  // Function to delete media for a given message
+  const deleteMedia = (msg: any) => {
+    if (msg.publicId) {
+      fetch(`/api/upload?publicId=${msg.publicId}`, { method: "DELETE" }).catch(() => {});
+    }
+  };
+  setContacts((prev) =>
+    prev.map((c) => {
+      if (c.id === userId) {
+        // Delete media for this user's messages
+        c.messages.forEach(deleteMedia);
+        return { ...c, messages: [] };
+      }
+      // If the current user went offline, clear all chats
+      if (userId === currentUser?.id) {
+        c.messages.forEach(deleteMedia);
+        return { ...c, messages: [] };
+      }
+      return c;
+    })
+  );
+});
 
     newSocket.on("receiveMessage", (message: any) => {
       setContacts((prev) =>
