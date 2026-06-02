@@ -25,6 +25,20 @@ const getAvatarColor = (id: string) => {
   return gradients[index];
 };
 
+const normalizeContactName = (name: string) => name.trim().toLowerCase();
+
+const dedupeContactsByName = (contacts: Contact[]) => {
+  const seen = new Set<string>();
+
+  return contacts.filter((contact) => {
+    const key = normalizeContactName(contact.name);
+    if (seen.has(key)) return false;
+
+    seen.add(key);
+    return true;
+  });
+};
+
 export default function UserDashboard() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -80,20 +94,26 @@ export default function UserDashboard() {
       const res = await fetch("/api/users");
       const data = await res.json();
       if (Array.isArray(data.users)) {
-        const mapped: Contact[] = data.users.map((u: any) => ({
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          status: "offline",
-          avatarColor: getAvatarColor(u.id),
-          gender: "male",
-          role: "Member",
-          messages: [],
-        }));
+        const mapped: Contact[] = dedupeContactsByName(
+          data.users.map((u: any) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            status: "offline",
+            avatarColor: getAvatarColor(u.id),
+            gender: "male",
+            role: "Member",
+            messages: [],
+          })),
+        );
 
         setContacts((prev) => {
           return mapped.map((newC) => {
-            const existing = prev.find((c) => c.id === newC.id);
+            const existing = prev.find(
+              (c) =>
+                c.id === newC.id ||
+                normalizeContactName(c.name) === normalizeContactName(newC.name),
+            );
             return {
               ...newC,
               messages: existing ? existing.messages : [],
@@ -136,7 +156,7 @@ export default function UserDashboard() {
   // Load existing messages from backend when component mounts
   // NOTE: This hook MUST be before any early returns to satisfy Rules of Hooks
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || !activeChatId) return;
     const loadMessages = async () => {
       try {
         const res = await fetch(`/api/chat?contactId=${activeChatId}`);
@@ -333,9 +353,9 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="h-dvh w-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100 transition-colors">
       {/* ── TOP NAVBAR ── */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 px-6 py-2 flex items-center justify-between shrink-0 transition-colors">
+      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 px-6 pt-[calc(8px+env(safe-area-inset-top,0px))] pb-2 flex items-center justify-between shrink-0 transition-colors">
         {/* Logo */}
         <div className="flex items-center gap-2.5">
           <span className="font-extrabold text-xl tracking-tight text-blue-500">
@@ -516,7 +536,7 @@ export default function UserDashboard() {
 
       {/* ── MOBILE BOTTOM TAB BAR ── */}
       <nav
-        className={`md:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 py-3 px-6 flex justify-between items-center transition-colors shrink-0 ${mobileChatOpen ? "hidden" : "flex"
+        className={`md:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] px-6 flex justify-between items-center transition-colors shrink-0 ${mobileChatOpen ? "hidden" : "flex"
           }`}
       >
         {(

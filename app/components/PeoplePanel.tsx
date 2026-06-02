@@ -25,8 +25,9 @@ export default function PeoplePanel({
 }: PeoplePanelProps) {
   const filteredContacts = contacts.filter(
     (c) =>
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.role.toLowerCase().includes(searchQuery.toLowerCase())
+      (c.status === "online" || c.status === "typing...") &&
+      (c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.role.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const selectedContact = contacts.find((c) => c.id === selectedPeopleId) || contacts[0];
@@ -59,58 +60,69 @@ export default function PeoplePanel({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto  py-2 pb-16 md:pb-4 flex flex-col gap-1">
-          {filteredContacts.map((contact) => {
-            const isSelected = contact.id === selectedPeopleId;
-            return (
-              <button
-                key={contact.id}
-                onClick={() => {
-                  setSelectedPeopleId(contact.id);
-                  // On mobile jump straight to chat
-                  if (typeof window !== "undefined" && window.innerWidth < 768) {
-                    openChat(contact.id);
-                  }
-                }}
-                className={`w-full p-2  flex items-center justify-between transition-all text-left cursor-pointer border-b border-slate-100 dark:border-slate-800/60 ${isSelected
-                    ? "bg-blue-50 dark:bg-blue-950/30"
-                    : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+        <div className="flex-1 overflow-y-auto py-2 pb-16 md:pb-4 flex flex-col gap-1">
+          {filteredContacts.length > 0 ? (
+            filteredContacts.map((contact) => {
+              const unreadCount = (contact.messages?.filter((m) => m.sender !== "me").length) ?? 0;
+              return (
+                <div
+                  key={contact.id}
+                  onClick={() => setSelectedPeopleId(contact.id)}
+                  className={`flex items-center justify-between p-3 mx-2 rounded-xl cursor-pointer transition-all ${
+                    selectedPeopleId === contact.id
+                      ? "bg-blue-50 dark:bg-blue-900/20"
+                      : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   }`}
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div
-                    className={`h-7 w-7 rounded-2xl bg-gradient-to-br ${contact.avatarColor} flex items-center justify-center font-bold text-white text-xs relative uppercase shrink-0 shadow-sm`}
-                  >
-                    {contact.name.substring(0, 1)}
-                    {(contact.status === "online" || contact.status === "typing...") && (
-                      <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{contact.name}</h4>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">{contact.role}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openChat(contact.id);
-                  }}
-                  className="p-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white transition shadow-sm cursor-pointer shrink-0"
-                  aria-label={`Chat with ${contact.name}`}
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </button>
-              </button>
-            );
-          })}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div
+                      className={`h-7 w-7 rounded-2xl bg-gradient-to-br ${contact.avatarColor} flex items-center justify-center font-bold text-white text-xs relative uppercase shrink-0 shadow-sm`}
+                    >
+                      {contact.name.substring(0, 1)}
+                      {(contact.status === "online" || contact.status === "typing...") && (
+                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{contact.name}</h4>
+                        {unreadCount > 0 && (
+                          <span className="flex items-center justify-center px-1.5 h-4 min-w-[16px] rounded-full bg-red-500 text-[9px] font-bold text-white">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">{contact.role}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openChat(contact.id);
+                    }}
+                    className="p-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white transition shadow-sm cursor-pointer shrink-0"
+                    aria-label={`Chat with ${contact.name}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </button>
+                </div>
+              );
+            })
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-400 dark:text-slate-500">
+              <svg className="w-8 h-8 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <p className="text-xs font-semibold">No users online right now</p>
+            </div>
+          )}
         </div>
       </aside>
 
       {/* Main: Profile detail card (desktop only) */}
-      <main className="hidden md:flex flex-1 flex-col h-full overflow-hidden p-10 justify-center items-center bg-slate-50 dark:bg-slate-950/20">
+      {/* <main className="hidden md:flex flex-1 flex-col h-full overflow-hidden p-10 justify-center items-center bg-slate-50 dark:bg-slate-950/20">
         {selectedContact ? (
           <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 flex flex-col gap-6 shadow-sm text-center items-center animate-fadeIn transition-colors">
             <div className="relative">
@@ -164,7 +176,7 @@ export default function PeoplePanel({
         ) : (
           <p className="text-slate-400 text-sm">Select a person to view their profile</p>
         )}
-      </main>
+      </main> */}
     </>
   );
 }

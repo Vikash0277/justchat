@@ -13,6 +13,10 @@ export interface Message {
   sender: "me" | "them";
   text: string;
   timestamp: string;
+  mediaUrl?: string;
+  mediaType?: "image" | "video";
+  publicId?: string;
+  ts?: number;
 }
 
 export interface Contact {

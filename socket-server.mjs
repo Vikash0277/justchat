@@ -1,7 +1,49 @@
 import { Server } from "socket.io";
 import { createServer } from "http";
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
 
-const httpServer = createServer();
+dotenv.config();
+const prisma = new PrismaClient();
+
+const httpServer = createServer((req, res) => {
+  if (req.method === "POST" && req.url === "/api/message-update") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body);
+        io.emit("messageUpdated", data);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (e) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: "Invalid JSON" }));
+      }
+    });
+  } else if (req.method === "POST" && req.url === "/api/message-deleted") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body);
+        io.emit("messageDeleted", data);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (e) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: "Invalid JSON" }));
+      }
+    });
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
 const io = new Server(httpServer, {
   cors: {
     origin: "*", // In production, restrict this to your domain
@@ -99,6 +141,31 @@ io.on("connection", (socket) => {
       socketToUser.delete(socket.id);
       console.log(`User ${userId} unregistered`);
       io.emit("userOffline", userId);
+
+      // Clean up guest user session if they do not reconnect within 5 seconds
+      setTimeout(async () => {
+        if (users.has(userId)) {
+          console.log(`User ${userId} reconnected within grace period. Cleanup cancelled.`);
+          return;
+        }
+
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { email: true }
+          });
+
+          if (user && user.email.endsWith("@guest.justchat.com")) {
+            console.log(`Cleaning up guest user ${userId} from database...`);
+            await prisma.user.delete({
+              where: { id: userId }
+            });
+            console.log(`Guest user ${userId} deleted successfully.`);
+          }
+        } catch (err) {
+          console.error(`Failed to clean up guest user ${userId}:`, err);
+        }
+      }, 5000);
     }
   });
 });

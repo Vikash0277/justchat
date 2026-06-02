@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react";
+import { useState, useMemo, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Country, State } from "country-state-city";
 import Link from "next/link";
@@ -18,14 +18,10 @@ type RegisterForm = {
 };
 
 const ages = Array.from({ length: 63 }, (_, i) => i + 18);
+const countries = Country.getAllCountries();
 
 export default function RegisterPage() {
     const router = useRouter();
-    const countries = Country.getAllCountries();
-    const allStates = State.getAllStates();
-    const getStatesByCountry = (countryCode: string) => {
-        return countryCode ? allStates.filter((state) => state.countryCode === countryCode) : [];
-    };
 
     const [form, setForm] = useState<RegisterForm>({
         username: "",
@@ -38,6 +34,10 @@ export default function RegisterPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    const states = useMemo(() => {
+        return form.country ? State.getStatesOfCountry(form.country) : [];
+    }, [form.country]);
 
     const setField = <K extends keyof RegisterForm>(field: K, value: RegisterForm[K]) => {
         setForm((prev) => ({
@@ -193,7 +193,7 @@ export default function RegisterPage() {
                         disabled={!form.country}
                     >
                         <option value="" className="dark:bg-slate-900">Select state</option>
-                        {getStatesByCountry(form.country).map((state) => (
+                        {states.map((state) => (
                             <option value={state.isoCode} key={state.isoCode} className="dark:bg-slate-900">
                                 {state.name}
                             </option>
