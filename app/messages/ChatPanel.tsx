@@ -48,9 +48,8 @@ export default function ChatPanel({
     <>
       {/* Sidebar: Chat thread list */}
       <aside
-        className={`w-full md:w-80 lg:w-96 border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col shrink-0 bg-white dark:bg-slate-900 transition-colors ${
-          mobileChatOpen ? "hidden md:flex" : "flex"
-        }`}
+        className={`w-full md:w-80 lg:w-96 border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col shrink-0 bg-white dark:bg-slate-900 transition-colors ${mobileChatOpen ? "hidden md:flex" : "flex"
+          }`}
       >
         <div className="p-4 flex flex-col gap-3 shrink-0 border-b border-slate-100 dark:border-slate-800/60">
           <div className="relative">
@@ -69,7 +68,7 @@ export default function ChatPanel({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 py-2 pb-20 md:pb-4 flex flex-col gap-1">
+        <div className="flex-1 overflow-y-auto px-2 py-2 pb-16 md:pb-4 flex flex-col gap-1">
           {filteredContacts.map((contact) => {
             const lastMessage = contact.messages[contact.messages.length - 1];
             const isActive = contact.id === activeChatId;
@@ -80,11 +79,10 @@ export default function ChatPanel({
                   setActiveChatId(contact.id);
                   setMobileChatOpen(true);
                 }}
-                className={`w-full p-3 rounded-2xl flex items-center gap-3 transition-all text-left cursor-pointer ${
-                  isActive
+                className={`w-full p-3 rounded-2xl flex items-center gap-3 transition-all text-left cursor-pointer ${isActive
                     ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50"
                     : "border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                }`}
+                  }`}
               >
                 <div
                   className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${contact.avatarColor} flex items-center justify-center font-bold text-white text-sm relative uppercase shrink-0 shadow-sm`}
@@ -102,19 +100,18 @@ export default function ChatPanel({
                     </span>
                   </div>
                   <p
-                    className={`text-[11px] truncate font-medium ${
-                      contact.status === "typing..."
+                    className={`text-[11px] truncate font-medium ${contact.status === "typing..."
                         ? "text-emerald-500 font-extrabold animate-pulse"
                         : isActive
-                        ? "text-slate-600 dark:text-slate-300"
-                        : "text-slate-400 dark:text-slate-500"
-                    }`}
+                          ? "text-slate-600 dark:text-slate-300"
+                          : "text-slate-400 dark:text-slate-500"
+                      }`}
                   >
                     {contact.status === "typing..."
                       ? "typing..."
                       : lastMessage
-                      ? lastMessage.text
-                      : "No messages yet"}
+                        ? lastMessage.text
+                        : "No messages yet"}
                   </p>
                 </div>
               </button>
@@ -125,9 +122,8 @@ export default function ChatPanel({
 
       {/* Main: Active chat window */}
       <main
-        className={`flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors overflow-hidden ${
-          mobileChatOpen ? "flex" : "hidden md:flex"
-        }`}
+        className={`flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors overflow-hidden ${mobileChatOpen ? "flex" : "hidden md:flex"
+          }`}
       >
         {activeChat ? (
           <>
@@ -151,11 +147,10 @@ export default function ChatPanel({
                 <div>
                   <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">{activeChat.name}</h3>
                   <p
-                    className={`text-[10px] font-bold ${
-                      activeChat.status === "typing..."
+                    className={`text-[10px] font-bold ${activeChat.status === "typing..."
                         ? "text-emerald-500 animate-pulse"
                         : "text-slate-400 dark:text-slate-500"
-                    }`}
+                      }`}
                   >
                     {activeChat.status === "typing..." ? "typing a message..." : activeChat.status}
                   </p>
@@ -167,7 +162,7 @@ export default function ChatPanel({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                 </button>
-                <button 
+                <button
                   onClick={onStartVideoCall}
                   className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
                   title="Start Video Call"
@@ -185,16 +180,14 @@ export default function ChatPanel({
                 activeChat.messages.map((msg: Message) => (
                   <div
                     key={msg.id}
-                    className={`flex flex-col max-w-[70%] md:max-w-[60%] animate-slideUp ${
-                      msg.sender === "me" ? "self-end items-end" : "self-start items-start"
-                    }`}
+                    className={`flex flex-col max-w-[70%] md:max-w-[60%] animate-slideUp ${msg.sender === "me" ? "self-end items-end" : "self-start items-start"
+                      }`}
                   >
                     <div
-                      className={`p-3.5 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm ${
-                        msg.sender === "me"
+                      className={`p-3.5 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm ${msg.sender === "me"
                           ? "bg-blue-600 text-white rounded-tr-none"
                           : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 text-slate-800 dark:text-slate-100 rounded-tl-none"
-                      }`}
+                        }`}
                     >
                       {msg.text}
                     </div>

@@ -90,7 +90,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="flex h-full box-border justify-center items-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 transition-colors">
+        <div className="flex min-h-screen box-border justify-center items-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 transition-colors">
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 max-w-md w-full flex-col rounded-2xl p-6 shadow-lg">
                 <h1 className="mb-6 text-center text-2xl font-bold sm:text-3xl text-slate-900 dark:text-white">
                     Register
@@ -129,8 +129,8 @@ export default function RegisterPage() {
 
                     <div className="flex gap-4">
                         <label className={`flex items-center gap-2 flex-1 border h-11 rounded-xl px-3 transition cursor-pointer ${form.gender === "male"
-                                ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
-                                : "bg-slate-50 dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
+                            : "bg-slate-50 dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                             }`}>
                             <input
                                 type="radio"
@@ -143,8 +143,8 @@ export default function RegisterPage() {
                         </label>
 
                         <label className={`flex items-center gap-2 flex-1 border h-11 rounded-xl px-3 transition cursor-pointer ${form.gender === "female"
-                                ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
-                                : "bg-slate-50 dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
+                            : "bg-slate-50 dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                             }`}>
                             <input
                                 type="radio"

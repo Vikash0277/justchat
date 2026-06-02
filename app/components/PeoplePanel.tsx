@@ -42,7 +42,7 @@ export default function PeoplePanel({
       {/* Sidebar: Directory list */}
       <aside className="w-full md:w-80 lg:w-96 border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col shrink-0 bg-white dark:bg-slate-900 transition-colors">
         <div className="p-2 flex flex-col gap-3 shrink-0  dark:border-slate-800/60">
-          
+
           <div className="relative">
             <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-slate-500">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -59,7 +59,7 @@ export default function PeoplePanel({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto  py-2 pb-20 md:pb-4 flex flex-col gap-1">
+        <div className="flex-1 overflow-y-auto  py-2 pb-16 md:pb-4 flex flex-col gap-1">
           {filteredContacts.map((contact) => {
             const isSelected = contact.id === selectedPeopleId;
             return (
@@ -72,11 +72,10 @@ export default function PeoplePanel({
                     openChat(contact.id);
                   }
                 }}
-                className={`w-full p-2  flex items-center justify-between transition-all text-left cursor-pointer border-b border-slate-100 dark:border-slate-800/60 ${
-                  isSelected
+                className={`w-full p-2  flex items-center justify-between transition-all text-left cursor-pointer border-b border-slate-100 dark:border-slate-800/60 ${isSelected
                     ? "bg-blue-50 dark:bg-blue-950/30"
                     : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <div

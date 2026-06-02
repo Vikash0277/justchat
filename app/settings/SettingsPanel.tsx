@@ -23,9 +23,9 @@ export default function SettingsPanel({
     <>
       {/* Sidebar: Settings panels */}
       <aside className="w-full md:w-80 lg:w-96 border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col shrink-0 bg-white dark:bg-slate-900 transition-colors overflow-y-auto">
-        
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-20 md:pb-4 flex flex-col gap-4">
+
+        <div className="flex-1 overflow-y-auto px-4 py-4 pb-16 md:pb-4 flex flex-col gap-4">
           {/* Profile gradient card */}
           <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex flex-col gap-3 shadow-md relative overflow-hidden">
             <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-white/10 rounded-full blur-xl pointer-events-none" />
@@ -84,14 +84,12 @@ export default function SettingsPanel({
               <span className="font-bold text-slate-700 dark:text-slate-200">Dark Mode</span>
               <button
                 onClick={onToggleTheme}
-                className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none ${
-                  theme === "dark" ? "bg-blue-600" : "bg-slate-200 dark:bg-slate-700"
-                }`}
+                className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none ${theme === "dark" ? "bg-blue-600" : "bg-slate-200 dark:bg-slate-700"
+                  }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                    theme === "dark" ? "translate-x-5" : "translate-x-0"
-                  }`}
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${theme === "dark" ? "translate-x-5" : "translate-x-0"
+                    }`}
                 />
               </button>
             </div>
@@ -149,14 +147,12 @@ export default function SettingsPanel({
               </div>
               <button
                 onClick={onToggleTheme}
-                className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none ${
-                  theme === "dark" ? "bg-blue-600" : "bg-slate-200 dark:bg-slate-700"
-                }`}
+                className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none ${theme === "dark" ? "bg-blue-600" : "bg-slate-200 dark:bg-slate-700"
+                  }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                    theme === "dark" ? "translate-x-5" : "translate-x-0"
-                  }`}
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${theme === "dark" ? "translate-x-5" : "translate-x-0"
+                    }`}
                 />
               </button>
             </div>
