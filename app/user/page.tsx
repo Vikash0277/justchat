@@ -234,25 +234,27 @@ export default function UserDashboard() {
 
       // Handle user going offline – clear chats for that user
       newSocket.on("userOffline", (userId: string) => {
-        // If the offline user is the current user, clear all chats
+        // If the offline user is the current user, force logout and redirect to login
         if (userId === currentUser?.id) {
+          // Clean up any stored session data
+          localStorage.removeItem("currentUser");
+          // Optionally clear contacts and state
+          setContacts([]);
+          setActiveChatId("");
+          setSelectedPeopleId("");
+          // Redirect to login page
+          router.push("/login");
+        } else {
+          // Clear only chats of the offline user
           setContacts((prev) =>
             prev.map((c) => {
-              c.messages.forEach(deleteMedia);
-              return { ...c, messages: [] };
+              if (c.id === userId) {
+                c.messages.forEach(deleteMedia);
+                return { ...c, messages: [] };
+              }
+              return c;
             })
           );
-        } else {
-           // Clear only chats of the offline user
-           setContacts((prev) =>
-             prev.map((c) => {
-               if (c.id === userId) {
-                 c.messages.forEach(deleteMedia);
-                 return { ...c, messages: [] };
-               }
-               return c;
-             }));
-          
         }
       });
 
