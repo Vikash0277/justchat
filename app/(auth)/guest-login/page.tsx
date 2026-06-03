@@ -32,7 +32,10 @@ export default function GuestLogin() {
     const [error, setError] = useState("");
 
     const states = useMemo(() => {
-        return form.country ? State.getStatesOfCountry(form.country) : [];
+        console.log('🔎 Selected country code →', form.country);
+        const result = form.country ? State.getStatesOfCountry(form.country) : [];
+        console.log('🔎 Number of states returned →', result?.length ?? 0);
+        return result;
     }, [form.country]);
 
     const setField = <K extends keyof GuestForm>(
@@ -163,10 +166,7 @@ export default function GuestLogin() {
                     <select
                         className="rounded-2xl border bg-slate-50 dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 h-11 pl-3 pr-3 text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
                         value={form.country}
-                        onChange={(e) => {
-                            setField("country", e.target.value);
-                            setField("state", "");
-                        }}
+                        onChange={(e) => setForm(prev => ({ ...prev, country: e.target.value, state: "" }))}
                     >
                         <option value="" className="dark:bg-slate-900">Select country</option>
                         {countries.map((country) => (
@@ -183,11 +183,15 @@ export default function GuestLogin() {
                         disabled={!form.country}
                     >
                         <option value="" className="dark:bg-slate-900">Select state</option>
-                        {states.map((state) => (
-                            <option value={state.isoCode} key={state.isoCode} className="dark:bg-slate-900">
-                                {state.name}
-                            </option>
-                        ))}
+                        {states.length > 0 ? (
+                            states.map((state) => (
+                                <option value={state.isoCode} key={state.isoCode} className="dark:bg-slate-900">
+                                    {state.name}
+                                </option>
+                            ))
+                        ) : (
+                            <option disabled className="dark:bg-slate-900">No states available for this country</option>
+                        )}
                     </select>
 
                     <button

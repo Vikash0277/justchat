@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { getUserFromRequest } from "@/utils/auth";
-import { getMessages, addMessage, deleteMessage } from "@/utils/chatStore";
+import { PrismaClient } from "@prisma/client";
 import { scheduleMediaDeletion, cancelMediaDeletion, notifyMessageDeleted } from "@/utils/mediaCleaner";
 import { deleteMedia } from "@/utils/cloudinary";
 
-// GET /api/chat – return messages between current user and specified contact
+const prisma = new PrismaClient();
+
+// GET /api/chat – return paginated messages between current user and specified contact
 export async function GET(req: Request) {
   const user = await getUserFromRequest(req);
   if (!user) {
@@ -16,8 +18,28 @@ export async function GET(req: Request) {
   if (!contactId) {
     return NextResponse.json({ error: "Missing contactId" }, { status: 400 });
   }
-  const msgs = getMessages(user.sub, contactId);
-  return NextResponse.json({ messages: msgs });
+  const skip = parseInt(searchParams.get("skip") ?? "0", 10);
+  const take = parseInt(searchParams.get("take") ?? "20", 10);
+
+  const whereClause = {
+    OR: [
+      { senderId: user.sub, receiverId: contactId },
+      { senderId: contactId, receiverId: user.sub },
+    ],
+  };
+
+  const [total, msgs] = await Promise.all([
+    prisma.message.count({ where: whereClause }),
+    prisma.message.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "asc" },
+      skip,
+      take,
+    }),
+  ]);
+
+  const hasMore = skip + take < total;
+  return NextResponse.json({ messages: msgs, hasMore });
 }
 
 // POST /api/chat – add a new chat message for the current user to a contact
@@ -32,17 +54,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing or invalid contactId" }, { status: 400 });
   }
 
-  const msg = {
-    id: uuidv4(),
-    from: user.sub,
-    text: text || "",
-    ts: Date.now(),
-    mediaUrl,
-    mediaType,
-    publicId,
-  };
-
-  addMessage(user.sub, contactId, msg);
+  const msg = await prisma.message.create({
+    data: {
+      id: uuidv4(),
+      senderId: user.sub,
+      receiverId: contactId,
+      content: text ?? "",
+      createdAt: new Date(),
+      mediaUrl,
+      mediaType,
+      publicId,
+    },
+  });
 
   // If there's media (image/video), schedule its auto-deletion in 10 minutes
   if (publicId && mediaType) {
@@ -65,7 +88,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Missing messageId" }, { status: 400 });
   }
 
-  const deletedMsg = deleteMessage(messageId);
+  const deletedMsg = await prisma.message.delete({ where: { id: messageId } });
   if (deletedMsg) {
     // 1. Cancel the automatic cleanup timer if it is still active
     cancelMediaDeletion(messageId);

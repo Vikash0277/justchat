@@ -308,7 +308,7 @@ export default function ChatPanel({
                           <img
                             src={msg.mediaUrl}
                             alt="Shared image"
-                            className="max-w-full max-h-60 rounded-xl mb-2 cursor-pointer hover:opacity-90 transition"
+                            className="max-w-full max-h-[300px] object-contain rounded-xl mb-2 cursor-pointer hover:opacity-90 transition"
                             onClick={() =>
                               setLightbox({ url: msg.mediaUrl!, type: "image" })
                             }

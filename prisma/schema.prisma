@@ -3,14 +3,35 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  createdAt DateTime @default(now())
+  id               String    @id @default(cuid())
+  email            String    @unique
+  password         String
+  name             String    @unique
+  role             String    @default("user")
+  age              Int?      // optional age
+  state            String?   // optional state
+  country          String?   // optional country
+  gender           String?   // optional gender
+  guestExpiresAt   DateTime?
+  receivedMessages Message[] @relation("receivedMessages")
+  sentMessages     Message[] @relation("sentMessages")
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String?
+  createdAt  DateTime @default(now())
+  senderId   String
+  receiverId String
+  mediaUrl   String?
+  mediaType  String?
+  publicId   String?
+  receiver   User     @relation("receivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("sentMessages", fields: [senderId], references: [id])
 }

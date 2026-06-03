@@ -95,31 +95,31 @@ export default function UserDashboard() {
       const data = await res.json();
       if (Array.isArray(data.users)) {
         const mapped: Contact[] = dedupeContactsByName(
-          data.users.map((u: any) => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            status: "offline",
-            avatarColor: getAvatarColor(u.id),
-            gender: "male",
-            role: "Member",
-            messages: [],
-          })),
+            data.users.map((u: any) => ({
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              status: onlineUsers.includes(u.id) ? "online" : "offline",
+              avatarColor: getAvatarColor(u.id),
+              gender: u.gender ?? "",
+              role: "Member",
+              age: u.age,
+              state: u.state,
+              country: u.country,
+              messages: [],
+            })),
         );
 
+        // Directly set contacts to the newly fetched list, preserving any existing messages if present
         setContacts((prev) => {
-          return mapped.map((newC) => {
-            const existing = prev.find(
-              (c) =>
-                c.id === newC.id ||
-                normalizeContactName(c.name) === normalizeContactName(newC.name),
-            );
-            return {
-              ...newC,
-              messages: existing ? existing.messages : [],
-              status: existing ? existing.status : newC.status,
-            };
-          });
+          // Create a map of previous messages by contact id for quick lookup
+          const prevMap = new Map(prev.map((c) => [c.id, c.messages]));
+          return mapped.map((newC) => ({
+            ...newC,
+            messages: prevMap.get(newC.id) || [],
+            // Preserve existing status if already known, otherwise fallback to offline
+            status: prev.find((c) => c.id === newC.id)?.status || newC.status,
+          }));
         });
 
         // Set activeChatId and selectedPeopleId if they aren't set yet
@@ -193,7 +193,7 @@ export default function UserDashboard() {
     if (!currentUser) return;
 
     // Connect to the separate Socket.IO server
-    const newSocket = io("http://localhost:3001");
+    const newSocket = io("http://localhost:3002");
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
@@ -224,31 +224,30 @@ export default function UserDashboard() {
       });
     });
 
-      // Updated offline handling with media cleanup
-newSocket.on("userOffline", (userId: string) => {
-  setOnlineUsers((prev) => prev.filter((id) => id !== userId));
-  // Function to delete media for a given message
-  const deleteMedia = (msg: any) => {
-    if (msg.publicId) {
-      fetch(`/api/upload?publicId=${msg.publicId}`, { method: "DELETE" }).catch(() => {});
-    }
-  };
-  setContacts((prev) =>
-    prev.map((c) => {
-      if (c.id === userId) {
-        // Delete media for this user's messages
-        c.messages.forEach(deleteMedia);
-        return { ...c, messages: [] };
-      }
-      // If the current user went offline, clear all chats
-      if (userId === currentUser?.id) {
-        c.messages.forEach(deleteMedia);
-        return { ...c, messages: [] };
-      }
-      return c;
-    })
-  );
-});
+      // Handle user going offline – clear chats for that user
+      newSocket.on("userOffline", (userId: string) => {
+        // If the offline user is the current user, clear all chats
+        if (userId === currentUser?.id) {
+          setContacts((prev) =>
+            prev.map((c) => {
+              c.messages.forEach(deleteMedia);
+              return { ...c, messages: [] };
+            })
+          );
+        } else {
+           // Clear only chats of the offline user
+           setContacts((prev) =>
+             prev.map((c) => {
+               if (c.id === userId) {
+                 c.messages.forEach(deleteMedia);
+                 return { ...c, messages: [] };
+               }
+               return c;
+             }));
+          
+        }
+      });
+
 
     newSocket.on("receiveMessage", (message: any) => {
       setContacts((prev) =>
@@ -265,7 +264,7 @@ newSocket.on("userOffline", (userId: string) => {
                   id: message.id,
                   sender: "them" as const,
                   text: message.text,
-                  timestamp: new Date(message.ts).toLocaleTimeString([], {
+                  timestamp: new Date(message.createdAt ?? message.ts).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                   }),
@@ -338,7 +337,7 @@ newSocket.on("userOffline", (userId: string) => {
               id: msg.id,
               from: currentUser.id,
               text: msg.text,
-              ts: msg.ts,
+              ts: msg.createdAt,
             },
           });
         }
@@ -355,7 +354,7 @@ newSocket.on("userOffline", (userId: string) => {
                     id: msg.id,
                     sender: "me" as const,
                     text: msg.text,
-                    timestamp: new Date(msg.ts).toLocaleTimeString([], {
+                    timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     }),
@@ -364,7 +363,7 @@ newSocket.on("userOffline", (userId: string) => {
               };
             }
             return c;
-          }),
+          })
         );
       }
     } catch (err) {
@@ -395,7 +394,7 @@ newSocket.on("userOffline", (userId: string) => {
           mediaUrl: data.url,
           mediaType: data.mediaType,
           publicId: data.publicId,
-          ts: Date.now(),
+          ts: data.createdAt ?? new Date().toISOString(),
         };
         setContacts((prev) =>
           prev.map((c) =>
@@ -429,6 +428,17 @@ newSocket.on("userOffline", (userId: string) => {
           : c,
       ),
     );
+  };
+
+  // Delete media associated with a message (used when clearing chats)
+  const deleteMedia = async (msg: any) => {
+    if (msg.publicId) {
+      try {
+        await fetch(`/api/upload?publicId=${msg.publicId}`, { method: 'DELETE' });
+      } catch (err) {
+        console.error('Failed to delete media', err);
+      }
+    }
   };
   return (
     <div className="h-dvh w-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100 transition-colors">
@@ -580,6 +590,7 @@ newSocket.on("userOffline", (userId: string) => {
             setActiveChatId={setActiveChatId}
             setActiveTab={setActiveTab}
             setMobileChatOpen={setMobileChatOpen}
+            onlineUsers={onlineUsers}
           />
         )}
 

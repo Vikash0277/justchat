@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Contact } from "../types";
 
 interface PeoplePanelProps {
@@ -11,6 +12,7 @@ interface PeoplePanelProps {
   setActiveChatId: (id: string) => void;
   setActiveTab: (tab: "people" | "chat" | "settings") => void;
   setMobileChatOpen: (open: boolean) => void;
+  onlineUsers: string[]; // Added prop to indicate online user IDs
 }
 
 export default function PeoplePanel({
@@ -22,13 +24,22 @@ export default function PeoplePanel({
   setActiveChatId,
   setActiveTab,
   setMobileChatOpen,
+  onlineUsers,
 }: PeoplePanelProps) {
-  const filteredContacts = contacts.filter(
-    (c) =>
-      (c.status === "online" || c.status === "typing...") &&
-      (c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.role.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [filterGender, setFilterGender] = useState("");
+  const [filterState, setFilterState] = useState("");
+  const [filterCountry, setFilterCountry] = useState("");
+  const [showOnlyOnline, setShowOnlyOnline] = useState(false);
+
+  const filteredContacts = contacts.filter((c) => {
+    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.role.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesGender = filterGender ? c.gender === filterGender : true;
+    const matchesState = filterState ? c.state === filterState : true;
+    const matchesCountry = filterCountry ? c.country === filterCountry : true;
+    const matchesOnline = showOnlyOnline ? onlineUsers.includes(c.id) : true;
+    return matchesSearch && matchesGender && matchesState && matchesCountry && matchesOnline;
+  });
 
   const selectedContact = contacts.find((c) => c.id === selectedPeopleId) || contacts[0];
 
@@ -59,6 +70,64 @@ export default function PeoplePanel({
             />
           </div>
         </div>
+           {/* Filter button and dropdown */}
+           <div className="relative inline-block ml-2">
+             {/* Show Only Online toggle */}
+             <label className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer mr-2">
+               <input type="checkbox" checked={showOnlyOnline} onChange={(e) => setShowOnlyOnline(e.target.checked)} className="form-checkbox h-3 w-3 text-blue-600" />
+               <span>Online only</span>
+             </label>
+            <button
+              type="button"
+              onClick={() => setShowAttachMenu((prev) => !prev)}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
+              aria-label="Filter contacts"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 12.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 009 19V12.414L3.293 6.707A1 1 0 013 6V4z" />
+              </svg>
+            </button>
+            {showAttachMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 p-3 z-20">
+                <label className="block mb-2 text-xs font-bold text-slate-600 dark:text-slate-300">Gender</label>
+                <select
+                  value={filterGender}
+                  onChange={(e) => setFilterGender(e.target.value)}
+                  className="w-full mb-3 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs"
+                >
+                  <option value="">All</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+                 <label className="block mb-2 text-xs font-bold text-slate-600 dark:text-slate-300">State</label>
+                 <select
+                   value={filterState}
+                   onChange={(e) => setFilterState(e.target.value)}
+                   className="w-full rounded-md bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs"
+                 >
+                   <option value="">All</option>
+                   {Array.from(new Set(contacts.map((c) => c.state).filter(Boolean))).map((st) => (
+                     <option key={st} value={st}>
+                       {st}
+                     </option>
+                   ))}
+                 </select>
+                 <label className="block mb-2 text-xs font-bold text-slate-600 dark:text-slate-300 mt-2">Country</label>
+                 <select
+                   value={filterCountry}
+                   onChange={(e) => setFilterCountry(e.target.value)}
+                   className="w-full rounded-md bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs"
+                 >
+                   <option value="">All</option>
+                   {Array.from(new Set(contacts.map((c) => c.country).filter(Boolean))).map((ct) => (
+                     <option key={ct} value={ct}>
+                       {ct}
+                     </option>
+                   ))}
+                 </select>
+              </div>
+            )}
+          </div>
 
         <div className="flex-1 overflow-y-auto py-2 pb-16 md:pb-4 flex flex-col gap-1">
           {filteredContacts.length > 0 ? (
@@ -79,13 +148,16 @@ export default function PeoplePanel({
                       className={`h-7 w-7 rounded-2xl bg-gradient-to-br ${contact.avatarColor} flex items-center justify-center font-bold text-white text-xs relative uppercase shrink-0 shadow-sm`}
                     >
                       {contact.name.substring(0, 1)}
-                      {(contact.status === "online" || contact.status === "typing...") && (
+                      {(contact.status === "online" || contact.status === "typing..." || onlineUsers.includes(contact.id)) && (
                         <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
                       )}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{contact.name}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Age: {contact.age ?? "—"} | {contact.state ?? "—"}, {contact.country ?? "—"}
+                        </p>
                         {unreadCount > 0 && (
                           <span className="flex items-center justify-center px-1.5 h-4 min-w-[16px] rounded-full bg-red-500 text-[9px] font-bold text-white">
                             {unreadCount}

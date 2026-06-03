@@ -170,7 +170,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = 3001;
+const PORT = 3002;
 httpServer.listen(PORT, () => {
   console.log(`Socket.IO Server running on port ${PORT}`);
 });

@@ -3,7 +3,7 @@ import { chatMap, type ChatMessage } from "./chatStore";
 
 export const notifyMessageUpdated = async (messageId: string, message: ChatMessage) => {
   try {
-    await fetch("http://localhost:3001/api/message-update", {
+    await fetch("http://localhost:3002/api/message-update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messageId, message }),
@@ -15,7 +15,7 @@ export const notifyMessageUpdated = async (messageId: string, message: ChatMessa
 
 export const notifyMessageDeleted = async (messageId: string) => {
   try {
-    await fetch("http://localhost:3001/api/message-deleted", {
+    await fetch("http://localhost:3002/api/message-deleted", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messageId }),

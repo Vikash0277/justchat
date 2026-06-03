@@ -27,5 +27,8 @@ export interface Contact {
   avatarColor: string;
   gender: string;
   role: string;
+  age?: number;
+  state?: string;
+  country?: string;
   messages: Message[];
 }
