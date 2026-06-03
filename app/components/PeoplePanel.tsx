@@ -30,14 +30,14 @@ export default function PeoplePanel({
   const [filterGender, setFilterGender] = useState("");
   const [filterState, setFilterState] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
-  const [showOnlyOnline, setShowOnlyOnline] = useState(false);
+  const [showOnlyOnline, setShowOnlyOnline] = useState(true);
 
   const filteredContacts = contacts.filter((c) => {
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.role.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGender = filterGender ? c.gender === filterGender : true;
     const matchesState = filterState ? c.state === filterState : true;
     const matchesCountry = filterCountry ? c.country === filterCountry : true;
-    const matchesOnline = showOnlyOnline ? onlineUsers.includes(c.id) : true;
+    const matchesOnline = showOnlyOnline ? c.status === "online" : true;
     return matchesSearch && matchesGender && matchesState && matchesCountry && matchesOnline;
   });
 
@@ -72,11 +72,7 @@ export default function PeoplePanel({
         </div>
            {/* Filter button and dropdown */}
            <div className="relative inline-block ml-2">
-             {/* Show Only Online toggle */}
-             <label className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer mr-2">
-               <input type="checkbox" checked={showOnlyOnline} onChange={(e) => setShowOnlyOnline(e.target.checked)} className="form-checkbox h-3 w-3 text-blue-600" />
-               <span>Online only</span>
-             </label>
+
             <button
               type="button"
               onClick={() => setShowAttachMenu((prev) => !prev)}

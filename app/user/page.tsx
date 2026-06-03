@@ -143,6 +143,14 @@ export default function UserDashboard() {
     fetchContacts();
   }, [fetchContacts]);
 
+  // Reset chats when a new user logs in
+  useEffect(() => {
+    // Clear contacts and active chat state for fresh start
+    setContacts([]);
+    setActiveChatId("");
+    setSelectedPeopleId("");
+  }, [currentUser]);
+
   // Sync online status changes to contacts
   useEffect(() => {
     setContacts((prev) =>
